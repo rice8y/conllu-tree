@@ -1,12 +1,15 @@
 #import "@preview/cetz:0.4.2"
 
-#let wasm-plugin = plugin("conllu_plugin.wasm")
+#let _wasm-plugin = plugin("conllu_plugin.wasm")
 
 #let dependency-tree(
   conllu-text, 
   word-spacing: 2.0, 
   level-height: 1.0,
   arc-roundness: 0.18,
+  endpoint-spacing: 0.0,
+  endpoint-angle: 90,
+  show-text: false,
   show-upos: false,
   show-xpos: false,
   show-lemma: false,
@@ -14,11 +17,11 @@
   show-root: true,
   highlights: (:) 
 ) = {
-  let raw-json = wasm-plugin.layout_conllu(bytes(conllu-text))
+  let raw-json = _wasm-plugin.layout_conllu(bytes(conllu-text))
   let sentences = json(raw-json)
 
   for sentence in sentences {
-    if sentence.text != "" {
+    if show-text and sentence.text != "" {
       align(center, strong(sentence.text))
       v(0.5em)
     }
@@ -85,10 +88,32 @@
         let base-y = 0.3
         
         let ctrl-y = (peak-y - 0.25 * base-y) / 0.75
-        let offset = (x-end - x-start) * arc-roundness
         
-        let start-pt = (x-start, base-y)
-        let end-pt = (x-end, base-y)
+        let dir = if x-end > x-start { 1.0 } else { -1.0 }
+        
+        let parsed-angle = if type(endpoint-angle) == int or type(endpoint-angle) == float {
+          endpoint-angle * 1deg
+        } else {
+          endpoint-angle
+        }
+        
+        let offset = if parsed-angle == none {
+          (x-end - x-start) * arc-roundness
+        } else if parsed-angle == 90deg {
+          0.0
+        } else {
+          dir * (ctrl-y - base-y) / calc.tan(parsed-angle)
+        }
+        
+        let shift-amount = float(arc.level) * float(endpoint-spacing) 
+        let adj-x-start = x-start + shift-amount
+        let adj-x-end = x-end - shift-amount
+        
+        let start-pt = (adj-x-start, base-y)
+        let end-pt = (adj-x-end, base-y)
+        
+        let ctrl-pt-start = (adj-x-start + offset, ctrl-y)
+        let ctrl-pt-end = (adj-x-end - offset, ctrl-y)
         
         let is-highlighted = arc.dep_id in highlights
         
@@ -115,13 +140,13 @@
         }
         
         bezier(
-          start-pt, end-pt, (x-start + offset, ctrl-y), (x-end - offset, ctrl-y), 
+          start-pt, end-pt, ctrl-pt-start, ctrl-pt-end, 
           stroke: (paint: stroke-color, dash: stroke-dash, thickness: stroke-width),
           mark: mark-arg,
           name: "arc-" + str(arc.start_idx) + "-" + str(arc.end_idx)
         )
 
-        let mid-x = (x-start + x-end) / 2.0
+        let mid-x = (adj-x-start + adj-x-end) / 2.0
         content(
           (mid-x, peak-y + 0.15), 
           box(
