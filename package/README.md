@@ -4,15 +4,6 @@ A fast, beautiful, and highly customizable Typst package for rendering Universal
 
 This package provides an elegant way to visualize dependency parsing results, syntax trees, and enhanced dependency graphs directly in Typst without relying on external Python scripts or LaTeX's `tikz-dependency`.
 
-## Features
-
-- **Full CoNLL-U Format Support**: Correctly parses 10-column tab-separated formats, sentence boundaries, and metadata (`# text = ...`).
-- **Smart Arc Routing**: Utilizes a custom packing algorithm written in Rust (compiled to WebAssembly) to prevent arc overlaps and collisions.
-- **Fine-Grained Arc Control**: Precisely adjust arc roundness, connection angles, and endpoint spacing to create polished, publication-ready diagrams.
-- **Enhanced Dependencies**: Fully supports Empty Nodes (e.g., `5.1`) and the `DEPS` column, rendering enhanced graphs distinctively (dashed blue lines by default).
-- **Multiword Tokens**: Safely skips MWT ranges (e.g., `1-2`) in the visual tree, strictly adhering to the Universal Dependencies v2 specification.
-- **Highly Customizable**: Toggle POS tags, lemmas, adjust arc behaviors, and selectively highlight specific edges for your NLP papers.
-
 ## Usage
 
 Import the package and use the `dependency-tree` function. Pass your CoNLL-U text to it.
