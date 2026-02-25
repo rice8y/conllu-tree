@@ -8,15 +8,16 @@ This package provides an elegant way to visualize dependency parsing results, sy
 
 - **Full CoNLL-U Format Support**: Correctly parses 10-column tab-separated formats, sentence boundaries, and metadata (`# text = ...`).
 - **Smart Arc Routing**: Utilizes a custom packing algorithm written in Rust (compiled to WebAssembly) to prevent arc overlaps and collisions.
+- **Fine-Grained Arc Control**: Precisely adjust arc roundness, connection angles, and endpoint spacing to create polished, publication-ready diagrams.
 - **Enhanced Dependencies**: Fully supports Empty Nodes (e.g., `5.1`) and the `DEPS` column, rendering enhanced graphs distinctively (dashed blue lines by default).
 - **Multiword Tokens**: Safely skips MWT ranges (e.g., `1-2`) in the visual tree, strictly adhering to the Universal Dependencies v2 specification.
-- **Highly Customizable**: Toggle POS tags, lemmas, adjust arc bezier roundness, and selectively highlight specific edges for your NLP papers.
+- **Highly Customizable**: Toggle POS tags, lemmas, adjust arc behaviors, and selectively highlight specific edges for your NLP papers.
 
 ## Usage
 
 Import the package and use the `dependency-tree` function. Pass your CoNLL-U text to it.
 
-````typst
+````typ
 #import "@preview/conllu-tree:0.1.0": dependency-tree
 #set page(width: auto, height: auto, margin: 3mm)
 
@@ -38,14 +39,16 @@ Import the package and use the `dependency-tree` function. Pass your CoNLL-U tex
 
 ## Advanced Usage & Highlighting
 
-You can display lemmas and part-of-speech tags (UPOS, XPOS) directly under the words. Additionally, you can highlight specific dependency arcs by targeting the dependent's ID using the `highlights` dictionary.
+You can display the original sentence text, lemmas, and part-of-speech tags (UPOS, XPOS) directly around the words. Additionally, you can highlight specific dependency arcs by targeting the dependent's ID using the `highlights` dictionary.
 
-```typst
+```typ
 #dependency-tree(
   sample-conllu, 
+  show-text: true,
   word-spacing: 2.5, 
   show-upos: true,
   show-lemma: true,
+  endpoint-spacing: 0.05,
   highlights: (
     "2": red,          // Highlight the ROOT arrow pointing to 'buy'
     "5": rgb("aa00ff") // Highlight the arc pointing to 'books'
@@ -67,6 +70,9 @@ Renders one or more sentences from a CoNLL-U formatted string.
 - `word-spacing` (Float): Horizontal distance between words. Default: `2.0`.
 - `level-height` (Float): Vertical height increment for each arc level. Default: `1.0`.
 - `arc-roundness` (Float): Controls the curvature of the bezier arcs. Lower values make arcs boxier; higher values make them more elliptical. Default: `0.18`.
+- `endpoint-spacing` (Float): Shifts arc endpoints horizontally to prevent multiple arrows pointing to the same token from perfectly overlapping. Default: `0.0`.
+- `endpoint-angle` (Angle/Float/None): The angle at which the arcs connect to the tokens. Accepts an angle (e.g., `90deg`), a number (e.g., `90`), or `none` to rely solely on `arc-roundness`. Default: `90`.
+- `show-text` (Bool): If `true`, displays the sentence text (extracted from `# text = ...` metadata) above the parsed tree. Default: `false`.
 - `show-upos` (Bool): If `true`, displays the Universal POS tag (column 4) below the word. Default: `false`.
 - `show-xpos` (Bool): If `true`, displays the language-specific POS tag (column 5) below the word. Default: `false`.
 - `show-lemma` (Bool): If `true`, displays the lemma (column 3) below the word. Default: `false`.
